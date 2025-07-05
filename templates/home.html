@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Smart PPE Detection System</title>
+  <link rel="icon" type="image/png" href="{{ url_for('assets_file', filename='images/favicon.png') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-image: url("/assets/images/background.png");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      min-height: 100vh;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    h1 {
+      font-size: 50px;
+      color: #ffffff;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 30px;
+      color: #ffffff;
+      margin-bottom: 30px;
+    }
+
+    .card-container {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 24px;
+      width: 100%;
+      max-width: 1400px;
+      justify-content: center;
+    }
+
+    .card {
+      background-color: #ffffff;
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+      text-decoration: none;
+      color: #1e293b;
+      width: 200px;
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .card i {
+      font-size: 36px;
+      margin-bottom: 12px;
+      color: #3b82f6;
+    }
+
+    .card h3 {
+      font-size: 20px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>WorkSafe AI: Smart PPE Detection System</h1>
+  <p>Detect personal protective equipment in real-time</p>
+
+  <div class="card-container">
+    <a href="/webcam" class="card">
+      <i class="fas fa-camera"></i>
+      <h3>Live Camera Detection</h3>
+    </a>
+    <a href="/video" class="card">
+      <i class="fas fa-video"></i>
+      <h3>Video Detection</h3>
+    </a>
+    <a href="/photo" class="card">
+      <i class="fas fa-image"></i>
+      <h3>Photo Detection</h3>
+    </a>
+    <a href="/gallery" class="card">
+      <i class="fas fa-photo-film"></i>
+      <h3>Video and Photo Gallery</h3>
+    </a>
+    <a href="/log" class="card">
+      <i class="fas fa-file-alt"></i>
+      <h3>Detection History</h3>
+    </a>
+    <a href="/chart" class="card">
+      <i class="fas fa-chart-bar"></i>
+      <h3>Detection Statistics</h3>
+    </a>
+  </div>
+</body>
+
+</html>

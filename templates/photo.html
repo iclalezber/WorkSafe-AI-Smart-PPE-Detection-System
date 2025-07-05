@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Photo Detection</title>
+  <link rel="icon" type="image/png" href="{{ url_for('assets_file', filename='images/favicon.png') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      margin: 0;
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(to bottom right, rgb(5, 49, 85), #f3f7fa);
+      padding: 50px 20px 30px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #ffffff;
+    }
+
+    .card {
+      background-color: #fff;
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 30px 30px;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+      animation: fadeInUp 0.5s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .upload-label {
+      border: 2px dashed #bbb;
+      padding: 15px 30px;
+      display: block;
+      border-radius: 10px;
+      cursor: pointer;
+      background-color: #e9eef3;
+      transition: border-color 0.3s ease, background-color 0.3s ease, transform 0.3s ease;
+      animation: fadeIn 0.8s ease;
+      color: #333;
+      font-weight: 500;
+    }
+
+    .upload-label:hover {
+      border-color: #007bff;
+      background-color: #dee6ed;
+      transform: scale(1.03);
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    #file-name {
+      margin-top: 20px;
+      margin-bottom: 30px;
+      font-size: 14px;
+      color: #0056b3;
+      font-weight: 500;
+      margin-bottom: 20px;
+      transition: all 0.3s ease;
+    }
+
+    #file-name:hover {
+      text-decoration: underline;
+      transform: scale(1.04);
+    }
+
+    #clear-file:hover {
+      color: #c82333;
+      transform: scale(1.2);
+      transition: 0.2s ease;
+    }
+
+    .btn {
+      margin-top: 25px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .btn:hover {
+      background-color: #218838;
+      transform: scale(1.05);
+    }
+
+    .back-btn {
+      margin-top: 40px;
+      background-color: #6c757d;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 600;
+      display: inline-block;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .back-btn:hover {
+      background-color: #5a6268;
+      transform: scale(1.05);
+    }
+
+    .success-msg,
+    .error-msg {
+      max-width: 400px;
+      margin: 20px auto 0 auto;
+      padding: 12px 20px;
+      font-weight: 500;
+      border-radius: 8px;
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .success-msg {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .error-msg {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .spinner {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .loader {
+      width: 24px;
+      height: 24px;
+      border: 4px solid #28a745;
+      border-top: 4px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .result-section {
+      margin-top: 60px;
+      animation: fadeInUp 0.8s ease-out;
+    }
+
+    .result-image {
+      width: 95%;
+      max-width: 1280px;
+      height: auto;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+      object-fit: contain;
+      border: 2px solid #ccc;
+      animation: fadeIn 1.3s ease;
+    }
+
+    .score-box {
+      margin-top: 20px;
+      padding: 15px 20px;
+      border-radius: 10px;
+      font-weight: bold;
+      display: inline-block;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .score-low {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .score-medium {
+      background-color: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeeba;
+    }
+
+    .score-high {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>🖼️ Upload Photo and Start Detection</h1>
+
+  <div id="success-message" class="success-msg">✅ Photo uploaded successfully!</div>
+  <div id="error-message" class="error-msg">⚠️ Upload failed. Please select a photo file!</div>
+
+  <form method="POST" enctype="multipart/form-data" action="{{ url_for('photo') }}"
+    onsubmit="return handlePhotoSubmit(event)">
+    <div class="card">
+      <label class="upload-label">
+        📁 Choose a photo file
+        <input type="file" name="image" accept="image/*" onchange="showFileName(this)">
+      </label>
+
+      <div id="file-name">No file selected</div>
+
+      <button class="btn" type="submit">Start Detection</button>
+
+      <div class="spinner" id="loading-spinner">
+        <div class="loader"></div>
+        <p style="font-size: 14px; color: #333; margin-top: 10px;">Detecting...</p>
+      </div>
+    </div>
+  </form>
+
+  {% if image_file %}
+  <div class="result-section">
+    <h2>📹 Detected Photo:</h2>
+    <img src="{{ image_file }}" class="result-image" alt="Detected Photo" />
+  </div>
+  {% endif %}
+
+  <a href="/" class="back-btn">⬅️ Back to Home</a>
+
+  <script>
+    function showFileName(input) {
+      const label = document.getElementById("file-name");
+
+      if (input.files.length > 0) {
+        label.innerHTML = `
+        ${input.files[0].name}
+        <span id="clear-file" style="margin-left: 8px; color: #dc3545; font-weight: bold; cursor: pointer;" title="Remove file">✕</span>
+      `;
+
+        document.getElementById("clear-file").onclick = () => {
+          input.value = "";
+          label.textContent = "No file selected";
+        };
+      } else {
+        label.textContent = "No file selected";
+      }
+    }
+
+    function handlePhotoSubmit(event) {
+      const input = document.querySelector('input[type="file"]');
+      const success = document.getElementById('success-message');
+      const error = document.getElementById('error-message');
+      const spinner = document.getElementById('loading-spinner');
+
+      success.style.display = 'none';
+      error.style.display = 'none';
+      spinner.style.display = 'none';
+
+      if (!input.files.length) {
+        event.preventDefault();
+        error.style.display = 'block';
+        setTimeout(() => {
+          error.style.display = 'none';
+        }, 3000);
+        return false;
+      }
+
+      spinner.style.display = 'block';
+      success.style.display = 'block';
+      setTimeout(() => {
+        success.style.display = 'none';
+      }, 3000);
+      return true;
+    }
+  </script>
+
+</body>
+
+</html>

@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Detection Statistics</title>
+  <link rel="icon" type="image/png" href="{{ url_for('assets_file', filename='images/favicon.png') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to bottom right, rgb(5, 49, 85), #f3f7fa);
+      color: #333;
+      padding: 50px 20px 30px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 32px;
+      margin-bottom: 30px;
+      color: #ffffff;
+    }
+
+    .grid-container {
+      display: flex;
+      justify-content: center;
+      gap: 60px;
+      max-width: 1700px;
+      margin: 0 auto;
+      flex-wrap: wrap;
+    }
+
+    .panel {
+      background: #fff;
+      padding: 30px;
+      border-radius: 18px;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+      animation: fadeIn 1s ease-in;
+      width: 800px;
+      box-sizing: border-box;
+    }
+
+    .panel h2 {
+      font-size: 20px;
+      margin-bottom: 30px;
+      margin-top: -10px;
+      text-align: center;
+    }
+
+    .kpi-boxes {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .kpi-box {
+      background-color: #f1f5f9;
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    }
+
+    canvas {
+      width: 100% !important;
+      height: 450px !important;
+    }
+
+    .download-btn {
+      display: block;
+      margin: 30px auto 0;
+      padding: 12px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      background-color: #f1f5f9;
+      color: #1e293b;
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .download-btn:hover {
+      background-color: #e2e8f0;
+      transform: scale(1.04);
+    }
+
+    a {
+      display: block;
+      width: fit-content;
+      margin: 40px auto 0;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 8px;
+      background-color: #6c757d;
+      color: white;
+      text-decoration: none;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    a:hover {
+      background-color: #5a6268;
+      transform: scale(1.05);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .alert-box {
+      margin-top: 5px;
+      margin-bottom: 25px;
+      padding: 12px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.5;
+      border-radius: 10px;
+      background-color: #fef3c7;
+      border-left: 6px solid #facc15;
+      text-align: left;
+      max-width: 100%;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .alert-box.low {
+      background-color: #dcfce7;
+      border-left-color: #22c55e;
+    }
+
+    .alert-box.high {
+      background-color: #fee2e2;
+      border-left-color: #ef4444;
+    }
+
+    .alert-danger {
+      background-color: #e4240b;
+      color: white;
+      padding: 14px 24px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 15px;
+      max-width: 700px;
+      margin: 0 auto 24px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      animation: fadeIn 0.4s ease;
+      display: block;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>📊 Number of Detected PPE Classes</h1>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  {% for category, message in messages %}
+  <div class="alert-{{ category }}">⚠️ {{ message }}</div>
+  {% endfor %}
+  {% endif %}
+  {% endwith %}
+
+  <div class="grid-container">
+    {% if class_counts_video %}
+    <div class="panel">
+
+      <h2 style="margin-bottom: 30px;">🎞️ Video Analysis</h2>
+      {% if stats_video %}
+      <div class="kpi-boxes">
+        <div class="kpi-box">🔢 Total: {{ stats_video.total }}</div>
+        <div class="kpi-box">📍 Most: {{ stats_video.most[0] }} ({{ stats_video.most[1] }})</div>
+        <div class="kpi-box">🫥 Least: {{ stats_video.least[0] }} ({{ stats_video.least[1] }})</div>
+      </div>
+      <div
+        class="alert-box {% if stats_video.risk_level == 'high' %}high{% elif stats_video.risk_level == 'low' %}low{% endif %}">
+        {{ stats_video.risk_message }}
+      </div>
+      {% endif %}
+      <div class="kpi-boxes" id="kpi-video"></div>
+      <canvas id="chartVideo"></canvas>
+      <button class="download-btn" onclick="downloadChart('chartVideo', 'video_chart')">⬇️ Download as PNG</button>
+    </div>
+    {% endif %}
+
+    {% if class_counts_webcam %}
+    <div class="panel">
+
+      <h2 style="margin-bottom: 30px;">📸 Webcam Overview</h2>
+      {% if stats_webcam %}
+      <div class="kpi-boxes">
+        <div class="kpi-box">🔢 Total: {{ stats_webcam.total }}</div>
+        <div class="kpi-box">📍 Most: {{ stats_webcam.most[0] }} ({{ stats_webcam.most[1] }})</div>
+        <div class="kpi-box">🫥 Least: {{ stats_webcam.least[0] }} ({{ stats_webcam.least[1] }})</div>
+      </div>
+      <div
+        class="alert-box {% if stats_webcam.risk_level == 'high' %}high{% elif stats_webcam.risk_level == 'low' %}low{% endif %}">
+        {{ stats_webcam.risk_message }}
+      </div>
+      {% endif %}
+      <div class="kpi-boxes" id="kpi-webcam"></div>
+      <canvas id="chartWebcam"></canvas>
+      <button class="download-btn" onclick="downloadChart('chartWebcam', 'webcam_chart')">⬇️ Download as PNG</button>
+    </div>
+    {% endif %}
+
+    {% if class_counts_photo %}
+    <div class="panel">
+
+      <h2 style="margin-bottom: 30px;">🖼️ Photo Overview</h2>
+      {% if stats_photo %}
+      <div class="kpi-boxes">
+        <div class="kpi-box">🔢 Total: {{ stats_photo.total }}</div>
+        <div class="kpi-box">📍 Most: {{ stats_photo.most[0] }} ({{ stats_photo.most[1] }})</div>
+        <div class="kpi-box">🫥 Least: {{ stats_photo.least[0] }} ({{ stats_photo.least[1] }})</div>
+      </div>
+      <div
+        class="alert-box {% if stats_photo.risk_level == 'high' %}high{% elif stats_photo.risk_level == 'low' %}low{% endif %}">
+        {{ stats_photo.risk_message }}
+      </div>
+      {% endif %}
+      <div class="kpi-boxes" id="kpi-photo"></div>
+      <canvas id="chartPhoto"></canvas>
+      <button class="download-btn" onclick="downloadChart('chartPhoto', 'photo_chart')">⬇️ Download as PNG</button>
+    </div>
+    {% endif %}
+  </div>
+
+  <a href="/">⬅️ Back to Home</a>
+
+  <script>
+    const classCountsVideo = JSON.parse('{{ class_counts_video | tojson | safe }}');
+    const classCountsWebcam = JSON.parse('{{ class_counts_webcam | tojson | safe }}');
+    const classCountsPhoto = JSON.parse('{{ class_counts_photo | tojson | safe }}');
+    const classColors = JSON.parse('{{ class_colors | tojson | safe }}');
+
+    async function downloadChart(canvasId, filename) {
+      const chart = Chart.getChart(canvasId);
+
+      const originalDisplay = chart.options.plugins.datalabels.display;
+      chart.options.plugins.datalabels.display = true;
+      chart.update();
+
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      const tmpCanvas = document.createElement('canvas');
+      tmpCanvas.width = chart.canvas.width;
+      tmpCanvas.height = chart.canvas.height;
+      const ctx = tmpCanvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, tmpCanvas.width, tmpCanvas.height);
+      ctx.drawImage(chart.canvas, 0, 0);
+
+      const link = document.createElement('a');
+      link.href = tmpCanvas.toDataURL('image/png');
+      link.download = filename + '.png';
+      link.click();
+
+      chart.options.plugins.datalabels.display = originalDisplay;
+      chart.update();
+
+      const source = filename.includes("video") ? "VIDEO" :
+        filename.includes("webcam") ? "WEBCAM" :
+          filename.includes("photo") ? "PHOTO" : "UNKNOWN";
+
+      await fetch('/log-chart-download', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ source })
+      });
+    }
+
+    function renderChart(canvasId, counts, title) {
+      const labels = Object.keys(counts);
+      const data = Object.values(counts);
+      const backgroundColors = labels.map(label => classColors[label] || '#007bff');
+
+      new Chart(document.getElementById(canvasId), {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Detection Count',
+            data: data,
+            backgroundColor: backgroundColors
+          }]
+        },
+        options: {
+          responsive: true,
+          devicePixelRatio: 2,
+          interaction: {
+            mode: 'nearest',
+            axis: 'x',
+            intersect: false
+          },
+          plugins: {
+            datalabels: {
+              display: false,
+              color: 'white',
+              anchor: 'center',
+              align: 'center',
+              font: {
+                weight: 'bold',
+                size: 12
+              },
+              formatter: value => value
+            },
+            legend: { display: false },
+            title: {
+              display: false,
+              text: title,
+              font: { size: 18 }
+            },
+            tooltip: {
+              callbacks: {
+                label: function (context) {
+                  const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                  const value = context.parsed.y;
+                  const percent = ((value / total) * 100).toFixed(1);
+                  return `${context.label}: ${value} detections (${percent}%)`;
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: {
+                color: '#e2e8f0'
+              },
+              ticks: {
+                stepSize: 1,
+                color: '#333'
+              }
+            },
+            x: {
+              grid: {
+                color: '#e2e8f0'
+              },
+              ticks: {
+                color: '#333'
+              }
+            }
+          }
+        },
+        plugins: [ChartDataLabels]
+      });
+    }
+
+    if (Object.keys(classCountsVideo).length > 0) {
+      renderChart("chartVideo", classCountsVideo, "");
+    }
+
+    if (Object.keys(classCountsWebcam).length > 0) {
+      renderChart("chartWebcam", classCountsWebcam, "");
+    }
+
+    if (Object.keys(classCountsPhoto).length > 0) {
+      renderChart("chartPhoto", classCountsPhoto, "");
+    }
+  </script>
+</body>
+
+</html>

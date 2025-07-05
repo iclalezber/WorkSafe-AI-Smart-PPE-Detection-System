@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Detection History</title>
+    <link rel="icon" type="image/png" href="{{ url_for('assets_file', filename='images/favicon.png') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to bottom right, rgb(23, 69, 106), #f3f7fa);
+            padding: 50px 20px 30px;
+            text-align: center;
+            color: #333;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            color: #ffffff;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease, transform 0.3s ease;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .button.download {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .button.download:hover {
+            background-color: #218838;
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.25);
+            transform: scale(1.05);
+        }
+
+        .button.download.pdf {
+            background-color: #fd7e14;
+            color: white;
+        }
+
+        .button.download.pdf:hover {
+            background-color: #e66a00;
+            box-shadow: 0 4px 12px rgba(253, 126, 20, 0.25);
+            transform: scale(1.05);
+        }
+
+        .button.back {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .button.back:hover {
+            background-color: #5a6268;
+            transform: scale(1.05);
+        }
+
+        .bottom-center {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+        }
+
+        table {
+            width: 95%;
+            max-width: 1500px;
+            margin: 30px auto;
+            border-collapse: collapse;
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            table-layout: fixed;
+        }
+
+        th,
+        td {
+            padding: 18px 25px;
+            border-bottom: 1px solid #eaeaea;
+            text-align: center;
+            word-break: break-word;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f6fc;
+        }
+
+        tr:hover {
+            background-color: #e0ebff;
+        }
+
+        select {
+            height: 48px;
+            padding: 12px 24px;
+            box-sizing: border-box;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 15px;
+            border: 1.5px solid #ccc;
+            background-color: #fff;
+            color: #333;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            transition: 0.3s ease;
+        }
+
+        select:hover {
+            border-color: #007bff;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+        }
+
+        .page-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            background-color: #f0f0f0;
+            color: #333;
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease-in-out;
+        }
+
+        .page-btn:hover {
+            background-color: #e0e0e0;
+        }
+
+        .page-btn.active {
+            background-color: #007bff;
+            color: white;
+        }
+    </style>
+    <script>
+        const currentSource = "{{ request.args.get('source', 'ALL') }}";
+        const currentEnvironment = "{{ request.args.get('environment', 'ALL') }}";
+        const currentScore = "{{ request.args.get('score', 'ALL') }}";
+    </script>
+</head>
+
+<body>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} mt-3" role="alert"
+        style="background-color: #e4240b; color: #ffffff; padding: 15px; border-radius: 8px; max-width: 700px; margin: 0 auto 20px; font-weight: 600;">
+        ⚠️ {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <h1>📄 Detection Log</h1>
+
+    <div
+        style="display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; margin-top: 24px; margin-bottom: 28px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <label for="source" style="font-weight: 600; font-size: 16px;">Select Source:</label>
+            <select name="source" id="source"
+                onchange="location.href='?source=' + this.value + '&environment=' + currentEnvironment + '&score=' + currentScore;">
+                <option value="All" {% if request.args.get('source')=='All' %}selected{% endif %}>All</option>
+                <option value="Video" {% if request.args.get('source')=='Video' %}selected{% endif %}>Video</option>
+                <option value="Webcam" {% if request.args.get('source')=='Webcam' %}selected{% endif %}>Webcam</option>
+                <option value="Photo" {% if request.args.get('source')=='Photo' %}selected{% endif %}>Photo</option>
+            </select>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <label for="environment" style="font-weight: 600; font-size: 16px;">Select Environment:</label>
+            <select name="environment" id="environment"
+                onchange="location.href='?source=' + currentSource + '&environment=' + this.value + '&score=' + currentScore;">
+                <option value="ALL" {% if request.args.get('environment')=='ALL' %}selected{% endif %}>All</option>
+                <option value="Worksite" {% if request.args.get('environment')=='Worksite' %}selected{% endif %}>
+                    Worksite</option>
+                <option value="Laboratory" {% if request.args.get('environment')=='Laboratory' %}selected{% endif %}>
+                    Laboratory</option>
+            </select>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <label for="score" style="font-weight: 600; font-size: 16px;">Select Score:</label>
+            <select name="score" id="score"
+                onchange="location.href='?source=' + currentSource + '&environment=' + currentEnvironment + '&score=' + this.value;">
+                <option value="All" {% if request.args.get('score')=='All' %}selected{% endif %}>All</option>
+                <option value="Low" {% if request.args.get('score')=='Low' %}selected{% endif %}>Low Score (0-35%)
+                </option>
+                <option value="Medium" {% if request.args.get('score')=='Medium' %}selected{% endif %}>Medium Score
+                    (36-70%)</option>
+                <option value="High" {% if request.args.get('score')=='High' %}selected{% endif %}>High Score (71-100%)
+                </option>
+            </select>
+        </div>
+        <a href="/download-excel?source={{ request.args.get('source', 'ALL') }}&environment={{ request.args.get('environment', 'ALL') }}&score={{ request.args.get('score', 'ALL') }}"
+            class="button download">📊 Download Excel</a>
+        <a href="/download-pdf?source={{ request.args.get('source', 'ALL') }}&environment={{ request.args.get('environment', 'ALL') }}&score={{ request.args.get('score', 'ALL') }}"
+            class="button download pdf">🧾 Download PDF</a>
+    </div>
+
+    {% if logs %}
+    <table>
+        <thead>
+            <tr>
+                <th>Timestamp</th>
+                <th>Source</th>
+                <th>Environment</th>
+                <th>Filename</th>
+                <th>Class</th>
+                <th>Confidence</th>
+                <th>Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for line in logs %}
+            {% set parts = line.strip().split() %}
+            {% if parts|length >= 7 %}
+            <tr>
+                <td>{{ parts[0] }} {{ parts[1] }}</td>
+                <td>{{ parts[2].strip('[]') }}</td>
+                <td>{{ parts[3].strip('[]') }}</td>
+                <td>{{ parts[4] }}</td>
+                <td>{{ parts[5] }}</td>
+                <td>{{ parts[6] }}</td>
+                <td>{{ parts[7] if parts|length > 7 else 'N/A' }}</td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div
+        style="background-color:#ffeeba; color:#856404; padding:16px; border-radius:8px; font-weight:600; max-width:600px; margin:40px auto 0 auto;">
+        ⚠️ No detection records available. Please run a detection first.
+    </div>
+    {% endif %}
+
+    {% if total_pages > 1 %}
+    <div style="margin: 40px auto 50px auto; text-align: center;">
+        <nav style="display: inline-flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+            {% if current_page > 1 %}
+            <a href="?page={{ current_page - 1 }}&source={{ request.args.get('source', 'ALL') }}&environment={{ request.args.get('environment', 'ALL') }}&score={{ request.args.get('score', 'ALL') }}"
+                class="page-btn">‹ Prev</a>
+            {% endif %}
+
+            {% for page_num in page_range %}
+            {% if page_num == current_page %}
+            <a href="?page={{ page_num }}&source={{ request.args.get('source', 'ALL') }}&environment={{ request.args.get('environment', 'ALL') }}&score={{ request.args.get('score', 'ALL') }}"
+                class="page-btn active">{{ page_num }}</a>
+            {% else %}
+            <a href="?page={{ page_num }}&source={{ request.args.get('source', 'ALL') }}&environment={{ request.args.get('environment', 'ALL') }}&score={{ request.args.get('score', 'ALL') }}"
+                class="page-btn">{{ page_num }}</a>
+            {% endif %}
+            {% endfor %}
+
+            {% if current_page < total_pages %} <a
+                href="?page={{ current_page + 1 }}&source={{ request.args.get('source', 'ALL') }}&environment={{ request.args.get('environment', 'ALL') }}&score={{ request.args.get('score', 'ALL') }}"
+                class="page-btn">Next ›</a>
+                {% endif %}
+        </nav>
+    </div>
+    {% endif %}
+
+    <div class="bottom-center">
+        <a href="/" class="button back">⬅️ Back to Home</a>
+    </div>
+    <script>
+        setTimeout(function () {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                alert.style.transition = "opacity 0.5s ease-out";
+                alert.style.opacity = 0;
+                setTimeout(() => alert.remove(), 500);
+            });
+        }, 1500);
+    </script>
+</body>
+
+</html>
